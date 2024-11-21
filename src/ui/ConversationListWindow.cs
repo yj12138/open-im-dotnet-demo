@@ -1,5 +1,6 @@
 using Dawn;
 using Dawn.UI;
+using IMDemo.Chat;
 using ImGuiNET;
 using OpenIM.IMSDK;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
@@ -11,11 +12,26 @@ namespace IMDemo.UI
         [MenuItem("Conversation/Conversation List")]
         public static void ShowConversationList()
         {
-            GetWindow<ConversationListWindow>().Show("Conversation List");
+            var window = GetWindow<ConversationListWindow>();
+            window.rect.w = 600;
+            window.rect.h = 400;
+            window.Show("Conversation List");
         }
 
         List<Conversation> conversationList;
         public override void OnEnable()
+        {
+            ChatMgr.Instance.currentUser.conversationListener.Event_OnConversationsInfoChange += OnConversationsInfoChange;
+
+            RefreshConversationList();
+        }
+        public override void OnClose()
+        {
+            base.OnClose();
+
+            ChatMgr.Instance.currentUser.conversationListener.Event_OnConversationsInfoChange -= OnConversationsInfoChange;
+        }
+        void OnConversationsInfoChange(List<Conversation> conversations)
         {
             RefreshConversationList();
         }
@@ -49,8 +65,9 @@ namespace IMDemo.UI
 
                 ImGui.TableHeadersRow();
 
-                foreach (var conversation in conversationList)
+                for (int i = 0; i < conversationList.Count; i++)
                 {
+                    var conversation = conversationList[i];
                     ImGui.TableNextRow();
 
                     ImGui.TableSetColumnIndex(0);
@@ -63,22 +80,30 @@ namespace IMDemo.UI
                     ImGui.Text(conversation.UnreadCount.ToString());
 
                     ImGui.TableSetColumnIndex(3);
+
+                    ImGui.PushID("Btn_Chat" + i);
                     if (ImGui.Button("Chat"))
                     {
                         OnChatClick(conversation);
                     }
+                    ImGui.PopID();
 
                     ImGui.TableSetColumnIndex(4);
+                    ImGui.PushID("Btn_Delete" + i);
                     if (ImGui.Button("Delete"))
                     {
                         OnDeleteClick(conversation);
                     }
+                    ImGui.PopID();
 
                     ImGui.TableSetColumnIndex(5);
+
+                    ImGui.PushID("Btn_Detail" + i);
                     if (ImGui.Button("Detail"))
                     {
                         OnDetailClick(conversation);
                     }
+                    ImGui.PopID();
                 }
 
                 ImGui.EndTable();
@@ -107,7 +132,7 @@ namespace IMDemo.UI
         }
         void OnDetailClick(Conversation conversation)
         {
-            ConversationInfoWindow.ShowConversationInfo(conversation);
+            ConversationInfoWindow.ShowConversationInfo(conversation.ConversationID);
         }
     }
 }

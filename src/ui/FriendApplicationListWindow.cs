@@ -12,6 +12,8 @@ namespace IMDemo.UI
         public static void Show()
         {
             var window = GetWindow<FriendApplicationListWindow>();
+            window.rect.w = 600;
+            window.rect.h = 400;
             window.Show("Friend Application List");
         }
         List<FriendApplicationInfo> applicantList;

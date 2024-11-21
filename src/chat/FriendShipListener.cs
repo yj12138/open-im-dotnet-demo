@@ -7,6 +7,8 @@ namespace IMDemo.Chat
 {
     public class FriendShipListener : IFriendShipListener
     {
+
+        public event Action<FriendInfo> Event_OnFriendInfoChange;
         public FriendShipListener()
         {
         }
@@ -31,7 +33,7 @@ namespace IMDemo.Chat
 
         public void OnFriendInfoChanged(FriendInfo friendInfo)
         {
-
+            Event_OnFriendInfoChange?.Invoke(friendInfo);
         }
 
         public void OnFriendApplicationAdded(FriendApplicationInfo friendApplication)

@@ -98,7 +98,14 @@ namespace IMDemo.UI
                 {
                     OpenIMSDK.SetSelfInfo((suc, err, errMsg) =>
                     {
-
+                        if (suc)
+                        {
+                            Close();
+                        }
+                        else
+                        {
+                            Debug.Error(errMsg);
+                        }
                     }, selfUserInfo);
                 }
             }

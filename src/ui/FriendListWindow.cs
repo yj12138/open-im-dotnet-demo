@@ -12,16 +12,23 @@ namespace IMDemo.UI
         [MenuItem("Friend/Friend List")]
         public static void ShowFriendInfo()
         {
-            GetWindow<FriendListWindow>().Show("Friend List");
+            var window = GetWindow<FriendListWindow>();
+            window.rect.w = 600;
+            window.rect.h = 400;
+            window.Show("Friend List");
         }
 
         List<FriendInfo> friendList;
 
         public override void OnEnable()
         {
+            ChatMgr.Instance.currentUser.friendShipListener.Event_OnFriendInfoChange += OnFriendInfoChange;
             RefreshFriendList();
         }
-
+        public override void OnClose()
+        {
+            ChatMgr.Instance.currentUser.friendShipListener.Event_OnFriendInfoChange -= OnFriendInfoChange;
+        }
         void RefreshFriendList()
         {
             OpenIMSDK.GetFriendList((list, errCode, errMsg) =>
@@ -32,25 +39,30 @@ namespace IMDemo.UI
                }
            }, true);
         }
-
+        void OnFriendInfoChange(FriendInfo friend)
+        {
+            RefreshFriendList();
+        }
         public override void OnGUI()
         {
             if (friendList == null) return;
 
             ImGui.BeginChild("TableContainer", new System.Numerics.Vector2(0, rect.h - 50), true, ImGuiWindowFlags.HorizontalScrollbar | ImGuiWindowFlags.AlwaysVerticalScrollbar);
 
-            if (ImGui.BeginTable("FriendInfoTable", 5, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollX))
+            if (ImGui.BeginTable("FriendInfoTable", 6, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollX))
             {
                 ImGui.TableSetupColumn("Nickname");
                 ImGui.TableSetupColumn("FaceURL");
+                ImGui.TableSetupColumn("Remark");
                 ImGui.TableSetupColumn("Chat");
                 ImGui.TableSetupColumn("Delete");
                 ImGui.TableSetupColumn("Detail");
 
                 ImGui.TableHeadersRow();
 
-                foreach (var friend in friendList)
+                for (int i = 0; i < friendList.Count; i++)
                 {
+                    var friend = friendList[i];
                     ImGui.TableNextRow();
 
                     ImGui.TableSetColumnIndex(0);
@@ -60,22 +72,32 @@ namespace IMDemo.UI
                     ImGui.Text(friend.FaceURL);
 
                     ImGui.TableSetColumnIndex(2);
+                    ImGui.Text(friend.Remark);
+
+                    ImGui.TableSetColumnIndex(3);
+                    ImGui.PushID("Btn_Chat" + i);
                     if (ImGui.Button("Chat"))
                     {
                         OnChatClick(friend);
                     }
+                    ImGui.PopID();
 
-                    ImGui.TableSetColumnIndex(3);
+                    ImGui.TableSetColumnIndex(4);
+                    ImGui.PushID("Btn_Delete" + i);
                     if (ImGui.Button("Delete"))
                     {
                         OnDeleteClick(friend);
                     }
+                    ImGui.PopID();
 
-                    ImGui.TableSetColumnIndex(4);
+                    ImGui.TableSetColumnIndex(5);
+
+                    ImGui.PushID("Btn_Detail" + i);
                     if (ImGui.Button("Detail"))
                     {
                         OnDetailClick(friend);
                     }
+                    ImGui.PopID();
                 }
 
                 ImGui.EndTable();
@@ -114,7 +136,7 @@ namespace IMDemo.UI
         }
         void OnDetailClick(FriendInfo friend)
         {
-            FriendInfoWindow.ShowFriendInfo(friend);
+            FriendInfoWindow.ShowFriendInfo(friend.FriendUserID);
         }
     }
 }

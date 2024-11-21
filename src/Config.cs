@@ -5,8 +5,8 @@ namespace IMDemo
     {
         public static string OfficialWebSite = "https://www.openim.io/zh";
         public static string DocWebSite = "https://docs.openim.io/zh-Hans/sdks/introduction";
-        public static string APIAddr = "http://192.168.101.9:10002";
-        public static string WsAddr = "ws://192.168.101.9:10001";
+        public static string APIAddr = "http://192.168.101.4:10002";
+        public static string WsAddr = "ws://192.168.101.4:10001";
         public static string DataDir = "./";
         public static uint LogLevel = 5;
         public static bool IsLogStandardOutput = false;

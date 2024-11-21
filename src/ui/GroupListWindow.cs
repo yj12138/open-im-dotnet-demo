@@ -1,5 +1,6 @@
 using Dawn;
 using Dawn.UI;
+using IMDemo.Chat;
 using ImGuiNET;
 using OpenIM.IMSDK;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
@@ -11,13 +12,23 @@ namespace IMDemo.UI
         [MenuItem("Group/Group List")]
         public static void ShowGroupList()
         {
-            GetWindow<GroupListWindow>().Show("Group List");
+            var window = GetWindow<GroupListWindow>();
+            window.rect.w = 600;
+            window.rect.h = 400;
+            window.Show("Group List");
         }
 
         List<GroupInfo> groupList;
         public override void OnEnable()
         {
             RefreshGroupList();
+
+            ChatMgr.Instance.currentUser.groupListener.Event_OnGroupInfoChange += OnGroupInfoChange;
+        }
+        public override void OnClose()
+        {
+            base.OnClose();
+            ChatMgr.Instance.currentUser.groupListener.Event_OnGroupInfoChange -= OnGroupInfoChange;
         }
         void RefreshGroupList()
         {
@@ -28,6 +39,11 @@ namespace IMDemo.UI
                     groupList = list;
                 }
             });
+        }
+
+        void OnGroupInfoChange(GroupInfo group)
+        {
+            RefreshGroupList();
         }
 
         public override void OnGUI()
@@ -46,8 +62,9 @@ namespace IMDemo.UI
 
                 ImGui.TableHeadersRow();
 
-                foreach (var group in groupList)
+                for (int i = 0; i < groupList.Count; i++)
                 {
+                    var group = groupList[i];
                     ImGui.TableNextRow();
 
                     ImGui.TableSetColumnIndex(0);
@@ -60,20 +77,26 @@ namespace IMDemo.UI
                     ImGui.Text(group.MemberCount.ToString());
 
                     ImGui.TableSetColumnIndex(3);
+                    ImGui.PushID("Btn_Chat" + i);
                     if (ImGui.Button("Chat"))
                     {
                         OnChatClick(group);
                     }
+                    ImGui.PopID();
                     ImGui.TableSetColumnIndex(4);
+                    ImGui.PushID("Btn_Delete" + i);
                     if (ImGui.Button("Delete"))
                     {
                         OnDeleteClick(group);
                     }
+                    ImGui.PopID();
                     ImGui.TableSetColumnIndex(5);
+                    ImGui.PushID("Btn_Detail" + i);
                     if (ImGui.Button("Detail"))
                     {
                         OnDetailClick(group);
                     }
+                    ImGui.PopID();
                 }
 
                 ImGui.EndTable();
@@ -98,7 +121,7 @@ namespace IMDemo.UI
         }
         void OnDetailClick(GroupInfo group)
         {
-            GroupInfoWindow.ShowGroupInfo(group);
+            GroupInfoWindow.ShowGroupInfo(group.GroupID);
         }
         void OnDeleteClick(GroupInfo group)
         {

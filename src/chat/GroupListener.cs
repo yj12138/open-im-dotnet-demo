@@ -7,18 +7,20 @@ namespace IMDemo.Chat
 {
     public class GroupListener : IGroupListener
     {
+
+        public event Action<GroupInfo> Event_OnGroupAdd;
+        public event Action<GroupInfo> Event_OnGroupDel;
+        public event Action<GroupInfo> Event_OnGroupInfoChange;
         public GroupListener()
         {
         }
 
         public void OnGroupApplicationAccepted(GroupApplicationInfo groupApplication)
         {
-            throw new NotImplementedException();
         }
 
         public void OnGroupApplicationAdded(GroupApplicationInfo groupApplication)
         {
-            throw new NotImplementedException();
         }
 
         public void OnGroupApplicationDeleted(GroupApplicationInfo groupApplication)
@@ -35,6 +37,7 @@ namespace IMDemo.Chat
 
         public void OnGroupInfoChanged(GroupInfo groupInfo)
         {
+            Event_OnGroupInfoChange?.Invoke(groupInfo);
         }
 
         public void OnGroupMemberAdded(GroupMember groupMemberInfo)
@@ -51,10 +54,12 @@ namespace IMDemo.Chat
 
         public void OnJoinedGroupAdded(GroupInfo groupInfo)
         {
+            Event_OnGroupAdd?.Invoke(groupInfo);
         }
 
         public void OnJoinedGroupDeleted(GroupInfo groupInfo)
         {
+            Event_OnGroupDel?.Invoke(groupInfo);
         }
     }
 }

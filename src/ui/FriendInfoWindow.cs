@@ -3,22 +3,38 @@ using Dawn.UI;
 using IMDemo.Chat;
 using ImGuiNET;
 using OpenIM.IMSDK;
+using OpenTK.Windowing.Common;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
 
 namespace IMDemo.UI
 {
     public class FriendInfoWindow : ImGuiWindow
     {
-        public static void ShowFriendInfo(FriendInfo friend)
+        public static void ShowFriendInfo(string friendUserId)
         {
             var window = GetWindow<FriendInfoWindow>();
-            window.friend = friend;
+            window.friendUserId = friendUserId;
+            window.rect.w = 600;
+            window.rect.h = 400;
             window.Show("Friend");
         }
+        public string friendUserId;
         public FriendInfo friend;
 
         public override void OnEnable()
         {
+            OpenIMSDK.GetSpecifiedFriendsInfo((list, err, errMsg) =>
+            {
+                if (list != null && list.Count == 1)
+                {
+                    friend = list[0];
+                }
+            }, [friendUserId], true);
+        }
+        public override void OnClose()
+        {
+            base.OnClose();
+            friend = null;
         }
 
         public override void OnGUI()
@@ -26,85 +42,95 @@ namespace IMDemo.UI
             if (friend == null) return;
             ImGui.Columns(2, "FriendInfoColumns", false);
 
-            // OwnerUserID
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("OwnerUserID");
             ImGui.NextColumn();
             ImGui.Text(friend.OwnerUserID);
             ImGui.NextColumn();
 
-            // FriendUserID
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("FriendUserID");
             ImGui.NextColumn();
             ImGui.Text(friend.FriendUserID);
             ImGui.NextColumn();
 
-            // Remark
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("Remark");
             ImGui.NextColumn();
-            if (ImGui.InputText("remark", ref friend.Remark, 100)) { }
+            if (ImGui.InputText("##remark", ref friend.Remark, 100)) { }
             ImGui.NextColumn();
 
-            // CreateTime
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("CreateTime");
             ImGui.NextColumn();
             ImGui.Text($"{Time.GetTimeStampStr(friend.CreateTime / 1000)}");
             ImGui.NextColumn();
 
-            // AddSource
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("AddSource");
             ImGui.NextColumn();
             ImGui.Text($"{friend.AddSource}");
             ImGui.NextColumn();
 
-            // OperatorUserID
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("OperatorUserID");
             ImGui.NextColumn();
             ImGui.Text(friend.OperatorUserID);
             ImGui.NextColumn();
 
-            // Nickname
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("Nickname");
             ImGui.NextColumn();
-            if (ImGui.InputText("nickname", ref friend.Nickname, 100)) { }
+            ImGui.Text(friend.Nickname);
             ImGui.NextColumn();
 
-            // FaceURL
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("FaceURL");
             ImGui.NextColumn();
-            if (ImGui.InputText("faceURL", ref friend.FaceURL, 100)) { }
+            ImGui.Text(friend.FaceURL);
             ImGui.NextColumn();
 
-            // Ex
-            ImGui.SetColumnWidth(0, 150);
-            ImGui.Text("Ex");
-            ImGui.NextColumn();
-            ImGui.Text(friend.Ex);
-            ImGui.NextColumn();
-
-            // AttachedInfo
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("AttachedInfo");
             ImGui.NextColumn();
             ImGui.Text(friend.AttachedInfo);
             ImGui.NextColumn();
 
-            // IsPinned
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("IsPinned");
             ImGui.NextColumn();
-            ImGui.Text(friend.IsPinned.ToString());
+            ImGui.Checkbox("##isPinned", ref friend.IsPinned);
             ImGui.NextColumn();
 
-            ImGui.Columns(1); // Reset to 1 column layout
+            ImGui.SetColumnWidth(0, 150);
+            ImGui.Text("Ex");
+            ImGui.NextColumn();
+            if (ImGui.InputText("##ex", ref friend.Ex, 500)) { }
+            ImGui.NextColumn();
 
+            ImGui.Columns(1);
+
+            if (ImGui.Button("Modify"))
+            {
+                OpenIMSDK.UpdateFriends((suc, err, errMsg) =>
+                {
+                    if (suc)
+                    {
+                        Close();
+                    }
+                    else
+                    {
+                        Debug.Error(errMsg);
+                    }
+                }, new UpdateFriendsReq()
+                {
+                    OwnerUserID = ChatMgr.Instance.currentUser.uid,
+                    FriendUserIDs = [friend.FriendUserID],
+                    IsPinned = friend.IsPinned,
+                    Remark = friend.Remark,
+                    Ex = friend.Ex,
+                });
+            }
         }
     }
 }
