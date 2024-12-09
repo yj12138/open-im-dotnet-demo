@@ -1,7 +1,7 @@
 using Dawn;
 using Dawn.UI;
 using ImGuiNET;
-using OpenIM.IMSDK;
+using OpenIM.Proto;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
 
 namespace IMDemo.UI
@@ -16,8 +16,8 @@ namespace IMDemo.UI
             window.rect.h = 400;
             window.Show("Friend Application List");
         }
-        List<FriendApplicationInfo> applicantList;
-        List<FriendApplicationInfo> recipientList;
+        List<IMFriendApplication> applicantList = new List<IMFriendApplication>();
+        List<IMFriendApplication> recipientList = new List<IMFriendApplication>();
         public override void OnEnable()
         {
             RefreshApplicantList();
@@ -25,31 +25,25 @@ namespace IMDemo.UI
         }
         void RefreshApplicantList()
         {
-            OpenIMSDK.GetFriendApplicationListAsApplicant((list, err, errMsg) =>
+            OpenIMSDK.GetFriendsRequest((list) =>
             {
                 if (list != null)
                 {
-                    applicantList = list;
+                    applicantList.Clear();
+                    applicantList.AddRange(list);
                 }
-                else
-                {
-                    Debug.Error(errMsg);
-                }
-            });
+            }, true);
         }
         void RefreshRecipientList()
         {
-            OpenIMSDK.GetFriendApplicationListAsRecipient((list, err, errMsg) =>
+            OpenIMSDK.GetFriendsRequest((list) =>
             {
                 if (list != null)
                 {
-                    recipientList = list;
+                    recipientList.Clear();
+                    recipientList.AddRange(list);
                 }
-                else
-                {
-                    Debug.Error(errMsg);
-                }
-            });
+            }, true);
         }
 
         public override void OnGUI()
@@ -124,11 +118,11 @@ namespace IMDemo.UI
                         ImGui.Text(application.ReqMsg);
 
                         ImGui.TableSetColumnIndex(3);
-                        HandleResult result = (HandleResult)application.HandleResult;
+                        HandleResult result = application.HandleResult;
                         ImGui.Text(result.ToString());
 
                         ImGui.TableSetColumnIndex(4);
-                        if (result == HandleResult.Unprocessed)
+                        if (result == HandleResult.ResultDefault)
                         {
                             if (ImGui.Button("Agree"))
                             {
@@ -137,7 +131,7 @@ namespace IMDemo.UI
                         }
 
                         ImGui.TableSetColumnIndex(5);
-                        if (result == HandleResult.Unprocessed)
+                        if (result == HandleResult.ResultDefault)
                         {
                             if (ImGui.Button("Refuse"))
                             {
@@ -153,41 +147,25 @@ namespace IMDemo.UI
             }
         }
 
-        void OnAgreeClick(FriendApplicationInfo applicationInfo)
+        void OnAgreeClick(IMFriendApplication applicationInfo)
         {
-            OpenIMSDK.AcceptFriendApplication((suc, err, errMsg) =>
+            OpenIMSDK.HandleFriendRequest((suc) =>
             {
                 if (suc)
                 {
                     RefreshRecipientList();
                 }
-                else
-                {
-                    Debug.Error(errMsg);
-                }
-            }, new ProcessFriendApplicationParams
-            {
-                ToUserID = applicationInfo.FromUserID,
-                HandleMsg = "i agree"
-            });
+            }, applicationInfo.FromUserID, "i agree", ApprovalStatus.Approved);
         }
-        void OnRefuseClick(FriendApplicationInfo applicationInfo)
+        void OnRefuseClick(IMFriendApplication applicationInfo)
         {
-            OpenIMSDK.RefuseFriendApplication((suc, err, errMsg) =>
+            OpenIMSDK.HandleFriendRequest((suc) =>
             {
                 if (suc)
                 {
                     RefreshRecipientList();
                 }
-                else
-                {
-                    Debug.Error(errMsg);
-                }
-            }, new ProcessFriendApplicationParams
-            {
-                ToUserID = applicationInfo.FromUserID,
-                HandleMsg = "i refuse",
-            });
+            }, applicationInfo.FromUserID, "i agree", ApprovalStatus.Rejected);
         }
     }
 }

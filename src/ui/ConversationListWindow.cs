@@ -2,7 +2,7 @@ using Dawn;
 using Dawn.UI;
 using IMDemo.Chat;
 using ImGuiNET;
-using OpenIM.IMSDK;
+using OpenIM.Proto;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
 
 namespace IMDemo.UI
@@ -18,7 +18,7 @@ namespace IMDemo.UI
             window.Show("Conversation List");
         }
 
-        List<Conversation> conversationList;
+        List<IMConversation> conversationList = new List<IMConversation>();
         public override void OnEnable()
         {
             ChatMgr.Instance.currentUser.conversationListener.Event_OnConversationsInfoChange += OnConversationsInfoChange;
@@ -31,21 +31,18 @@ namespace IMDemo.UI
 
             ChatMgr.Instance.currentUser.conversationListener.Event_OnConversationsInfoChange -= OnConversationsInfoChange;
         }
-        void OnConversationsInfoChange(List<Conversation> conversations)
+        void OnConversationsInfoChange(List<IMConversation> conversations)
         {
             RefreshConversationList();
         }
         public void RefreshConversationList()
         {
-            OpenIMSDK.GetAllConversationList((list, errCode, errMsg) =>
+            OpenIMSDK.GetAllConversationList((list) =>
             {
                 if (list != null)
                 {
-                    conversationList = list;
-                }
-                else
-                {
-                    Debug.Error(errMsg);
+                    conversationList.Clear();
+                    conversationList.AddRange(list);
                 }
             });
         }
@@ -112,25 +109,21 @@ namespace IMDemo.UI
             ImGui.EndChild();
         }
 
-        void OnChatClick(Conversation conversation)
+        void OnChatClick(IMConversation conversation)
         {
             ChatWindow.ShowChatWindow(conversation);
         }
-        void OnDeleteClick(Conversation conversation)
+        void OnDeleteClick(IMConversation conversation)
         {
-            OpenIMSDK.DeleteConversationAndDeleteAllMsg((suc, err, errMsg) =>
+            OpenIMSDK.DeleteConversationAndDeleteAllMsg((suc) =>
             {
                 if (suc)
                 {
                     RefreshConversationList();
                 }
-                else
-                {
-                    Debug.Error(errMsg);
-                }
             }, conversation.ConversationID);
         }
-        void OnDetailClick(Conversation conversation)
+        void OnDetailClick(IMConversation conversation)
         {
             ConversationInfoWindow.ShowConversationInfo(conversation.ConversationID);
         }

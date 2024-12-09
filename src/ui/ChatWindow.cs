@@ -3,20 +3,19 @@ using Dawn;
 using Dawn.UI;
 using IMDemo.Chat;
 using ImGuiNET;
-using Microsoft.VisualBasic;
 using OpenIM.IMSDK;
-using OpenTK.Graphics.ES11;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
+using OpenIM.Proto;
 
 namespace IMDemo.UI
 {
     public class ChatWindow : ImGuiWindow
     {
-        class SendMsgCallBack : IMsgSendCallBack
+        class SendMsgCallBack : ISendMsg
         {
             public Action<int, string> OnErrorCB;
             public Action<long> OnProgressCB;
-            public Action<Message> OnSuccessCB;
+            public Action<IMMessage> OnSuccessCB;
 
             public void OnError(int code, string errMsg)
             {
@@ -33,17 +32,13 @@ namespace IMDemo.UI
                     OnProgressCB(progress);
                 }
             }
-
-            public void OnSuccess(Message msg)
+            public void OnSuccess(IMMessage msg)
             {
-                if (OnSuccessCB != null)
-                {
-                    OnSuccessCB(msg);
-                }
+                throw new NotImplementedException();
             }
         }
 
-        public static void ShowChatWindow(Conversation conversation)
+        public static void ShowChatWindow(IMConversation conversation)
         {
             var window = GetWindow<ChatWindow>();
             window.conversation = conversation;
@@ -52,8 +47,8 @@ namespace IMDemo.UI
             window.Show(conversation.ShowName);
         }
 
-        public Conversation conversation;
-        public List<Message> historyMessage;
+        public IMConversation conversation;
+        public List<IMMessage> historyMessage;
         public string inputTextMessage;
         public string inputFilePath;
         public string inputSoundPath;
@@ -62,19 +57,10 @@ namespace IMDemo.UI
             inputTextMessage = "";
             inputFilePath = "";
             inputSoundPath = "";
-            OpenIMSDK.GetAdvancedHistoryMessageList((res, err, errMsg) =>
+            OpenIMSDK.GetHistoryMessageList((resp) =>
             {
-                if (res != null)
-                {
-                    historyMessage = [.. res.MessageList];
-                }
-            }, new GetAdvancedHistoryMessageListParams
-            {
-                ConversationID = conversation.ConversationID,
-                LastMinSeq = 0,
-                StartClientMsgID = "",
-                Count = 100
-            });
+                historyMessage = [.. resp.MessageList];
+            }, conversation.ConversationID, "", 100, false);
             var user = ChatMgr.Instance.currentUser;
             if (user != null)
             {
@@ -133,15 +119,15 @@ namespace IMDemo.UI
                             }
                         }
                     }
-                    if (message.NotificationElem != null)
-                    {
-                        var notification = Notification.Parse(message.ContentType, message.NotificationElem.Detail);
-                        if (notification is FriendApplicationApprovedTips)
-                        {
-                            var tip = notification as FriendApplicationApprovedTips;
-                            ImGui.Text("FriendApplicationApprovedTips:" + tip.FromToUserID.FromUserID + tip.FromToUserID.ToUserID);
-                        }
-                    }
+                    // if (message.NotificationElem != null)
+                    // {
+                    //     var notification = Notification.Parse(message.ContentType, message.NotificationElem.Detail);
+                    //     if (notification is FriendApplicationApprovedTips)
+                    //     {
+                    //         var tip = notification as FriendApplicationApprovedTips;
+                    //         ImGui.Text("FriendApplicationApprovedTips:" + tip.FromToUserID.FromUserID + tip.FromToUserID.ToUserID);
+                    //     }
+                    // }
                     senderNickName = message.SenderNickname;
                 }
                 if (scrollToBottom)
@@ -167,9 +153,11 @@ namespace IMDemo.UI
                     Debug.Log("Send Text");
                     if (!string.IsNullOrEmpty(inputTextMessage))
                     {
-                        var msg = OpenIMSDK.CreateTextMessage(inputTextMessage);
-                        SendMessage(msg);
-                        inputTextMessage = "";
+                        OpenIMSDK.CreateTextMessage((msg) =>
+                        {
+                            SendMessage(msg);
+                            inputTextMessage = "";
+                        }, inputTextMessage);
                     }
                 }
                 ImGui.PopID();
@@ -192,9 +180,11 @@ namespace IMDemo.UI
                         var fileName = Path.GetFileNameWithoutExtension(inputFilePath);
                         if (!string.IsNullOrEmpty(fileName))
                         {
-                            var msg = OpenIMSDK.CreateFileMessageFromFullPath(inputFilePath, fileName);
-                            SendMessage(msg);
-                            inputFilePath = "";
+                            OpenIMSDK.CreateFileMessage((msg) =>
+                            {
+                                SendMessage(msg);
+                                inputFilePath = "";
+                            }, inputFilePath, fileName);
                         }
                     }
                 }
@@ -215,9 +205,11 @@ namespace IMDemo.UI
                     Debug.Log("Send Sound");
                     if (!string.IsNullOrEmpty(inputSoundPath))
                     {
-                        var msg = OpenIMSDK.CreateSoundMessageFromFullPath(inputSoundPath, 1);
-                        SendMessage(msg);
-                        inputSoundPath = "";
+                        OpenIMSDK.CreateSoundMessage((msg) =>
+                        {
+                            SendMessage(msg);
+                            inputSoundPath = "";
+                        }, inputSoundPath, 1);
                     }
                 }
                 ImGui.PopID();
@@ -226,7 +218,7 @@ namespace IMDemo.UI
 
         }
 
-        public void SendMessage(Message msg)
+        public void SendMessage(IMMessage msg)
         {
             var msgCallBack = new SendMsgCallBack();
             msgCallBack.OnSuccessCB = (_msg) =>
@@ -243,21 +235,21 @@ namespace IMDemo.UI
             {
                 Debug.Error(errMsg);
             };
-            OpenIMSDK.SendMessage(msgCallBack, msg, conversation.UserID, conversation.GroupID, new OfflinePushInfo(), false);
+            OpenIMSDK.SendMessage(msgCallBack, msg, conversation.UserID, conversation.GroupID, false);
         }
 
-        public void OnRecvMessage(List<Message> msgLists)
+        public void OnRecvMessage(List<IMMessage> msgLists)
         {
             foreach (var msg in msgLists)
             {
-                if (msg.SessionType == ConversationType.Single)
+                if (msg.SessionType == SessionType.Single)
                 {
                     if (msg.SendID == conversation.UserID)
                     {
                         historyMessage.Add(msg);
                     }
                 }
-                else if (msg.SessionType == ConversationType.Group)
+                else if (msg.SessionType == SessionType.ReadGroup)
                 {
                     if (msg.RecvID == conversation.GroupID)
                     {

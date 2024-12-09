@@ -1,6 +1,7 @@
 using Dawn;
 using OpenIM.IMSDK;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
+using OpenIM.Proto;
 
 namespace IMDemo.Chat
 {
@@ -8,7 +9,7 @@ namespace IMDemo.Chat
     {
         public string uid;
         public string token;
-        public LoginStatus loginStatus = LoginStatus.Empty;
+        public LoginStatus loginStatus = LoginStatus.Default;
         public ConversationListener conversationListener;
         public FriendShipListener friendShipListener;
         public GroupListener groupListener;
@@ -27,26 +28,22 @@ namespace IMDemo.Chat
             OpenIMSDK.SetConversationListener(conversationListener);
             OpenIMSDK.SetFriendShipListener(friendShipListener);
             OpenIMSDK.SetGroupListener(groupListener);
-            OpenIMSDK.SetBatchMsgListener(messageListener);
+            OpenIMSDK.SetMessageListener(messageListener);
         }
 
         public void Login()
         {
-            OpenIMSDK.Login(uid, token, (bool suc, int errCode, string errMsg) =>
+            OpenIMSDK.Login((bool suc) =>
             {
                 if (suc)
                 {
                     OnLoginSuc();
                 }
-                else
-                {
-                    Debug.Log(errCode, errMsg);
-                }
-            });
+            }, uid, token);
         }
         public void Logout()
         {
-            OpenIMSDK.Logout((bool suc, int errCode, string errMsg) =>
+            OpenIMSDK.Logout((bool suc) =>
             {
                 if (suc)
                 {
@@ -54,27 +51,18 @@ namespace IMDemo.Chat
                     ChatMgr.Instance.currentUser = null;
                     ChatMgr.Application.Title = "IMDemo";
                 }
-                else
-                {
-                    Debug.Log(errCode, errMsg);
-                }
             });
         }
         void OnLoginSuc()
         {
-            uid = OpenIMSDK.GetLoginUserId();
             ChatMgr.Application.Title = "IMDemo-" + uid;
-            loginStatus = OpenIMSDK.GetLoginStatus();
-            OpenIMSDK.GetTotalUnreadMsgCount((count, err, errMsg) =>
+            OpenIMSDK.GetLoginStatus((status) =>
             {
-                if (err > 0)
-                {
-                    Debug.Error(errMsg);
-                }
-                else
-                {
-                    totalUnreadCount = count;
-                }
+                loginStatus = status;
+            });
+            OpenIMSDK.GetTotalUnreadMsgCount((count) =>
+            {
+                totalUnreadCount = count;
             });
         }
 

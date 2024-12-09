@@ -3,6 +3,7 @@ using Dawn.UI;
 using IMDemo.Chat;
 using ImGuiNET;
 using OpenIM.IMSDK;
+using OpenIM.Proto;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
 
 namespace IMDemo.UI
@@ -17,7 +18,7 @@ namespace IMDemo.UI
         }
 
         string searchUserId;
-        PublicUserInfo searchUserInfo;
+        IMUser searchUserInfo;
         bool notFriend = false;
 
         public override void OnEnable()
@@ -36,14 +37,14 @@ namespace IMDemo.UI
             ImGui.SameLine();
             if (ImGui.Button("Search"))
             {
-                OpenIMSDK.GetUsersInfo((list, err, errMsg) =>
+                OpenIMSDK.GetUsersInfo((list) =>
                 {
-                    if (list != null && list.Count == 1)
+                    if (list != null && list.Length == 1)
                     {
                         searchUserInfo = list[0];
-                        OpenIMSDK.GetSpecifiedFriendsInfo((list, err, errMsg) =>
+                        OpenIMSDK.GetSpecifiedFriends((list) =>
                         {
-                            if (list != null && list.Count == 1)
+                            if (list != null && list.Length == 1)
                             {
                                 notFriend = false;
                             }
@@ -95,25 +96,15 @@ namespace IMDemo.UI
 
             }
         }
-        void OnAddClick(PublicUserInfo userInfo)
+        void OnAddClick(IMUser userInfo)
         {
-            OpenIMSDK.AddFriend((suc, err, errMsg) =>
+            OpenIMSDK.AddFriend((suc) =>
             {
                 if (suc)
                 {
                     Close();
                 }
-                else
-                {
-                    Debug.Error(errMsg);
-                }
-            }, new ApplyToAddFriendReq
-            {
-                FromUserID = ChatMgr.Instance.currentUser.uid,
-                ToUserID = userInfo.UserID,
-                ReqMsg = $"我是{ChatMgr.Instance.currentUser.uid}",
-                Ex = "",
-            });
+            }, userInfo.UserID, $"我是{ChatMgr.Instance.currentUser.uid}", "");
         }
     }
 }

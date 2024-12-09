@@ -2,7 +2,7 @@ using Dawn;
 using Dawn.UI;
 using IMDemo.Chat;
 using ImGuiNET;
-using OpenIM.IMSDK;
+using OpenIM.Proto;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
 
 namespace IMDemo.UI
@@ -23,17 +23,22 @@ namespace IMDemo.UI
             }
         }
 
-        UserInfo selfUserInfo = null;
+        IMUser selfUserInfo = null;
+
+        string nickName;
+        string faceUrl;
 
         public override void OnEnable()
         {
             if (ChatMgr.Instance.currentUser != null)
             {
-                OpenIMSDK.GetSelfUserInfo((userInfo, err, errMsg) =>
+                OpenIMSDK.GetSelfUserInfo((userInfo) =>
                 {
                     if (userInfo != null)
                     {
                         selfUserInfo = userInfo;
+                        nickName = selfUserInfo.Nickname;
+                        faceUrl = selfUserInfo.FaceURL;
                     }
                 });
             }
@@ -53,7 +58,7 @@ namespace IMDemo.UI
 
                 ImGui.Text("NickName");
                 ImGui.NextColumn();
-                if (ImGui.InputText("nickname", ref selfUserInfo.Nickname, 100))
+                if (ImGui.InputText("nickname", ref nickName, 100))
                 {
 
                 }
@@ -61,7 +66,7 @@ namespace IMDemo.UI
 
                 ImGui.Text("FaceUrl");
                 ImGui.NextColumn();
-                if (ImGui.InputText("FaceURL", ref selfUserInfo.FaceURL, 100))
+                if (ImGui.InputText("FaceURL", ref faceUrl, 100))
                 {
 
                 }
@@ -72,19 +77,9 @@ namespace IMDemo.UI
                 ImGui.Text($"{Time.GetTimeStampStr(selfUserInfo.CreateTime / 1000)}");
                 ImGui.NextColumn();
 
-                ImGui.Text("AppManagerLevel");
-                ImGui.NextColumn();
-                ImGui.Text($"{selfUserInfo.AppMangerLevel}");
-                ImGui.NextColumn();
-
                 ImGui.Text("Ex");
                 ImGui.NextColumn();
                 ImGui.Text($"{selfUserInfo.Ex}");
-                ImGui.NextColumn();
-
-                ImGui.Text("AttachedInfo");
-                ImGui.NextColumn();
-                ImGui.Text($"{selfUserInfo.AttachedInfo}");
                 ImGui.NextColumn();
 
                 ImGui.Text("GlobalRecvMsgOpt");
@@ -96,17 +91,17 @@ namespace IMDemo.UI
 
                 if (ImGui.Button("Modify"))
                 {
-                    OpenIMSDK.SetSelfInfo((suc, err, errMsg) =>
+                    OpenIMSDK.SetSelfInfo((suc) =>
                     {
                         if (suc)
                         {
                             Close();
                         }
-                        else
-                        {
-                            Debug.Error(errMsg);
-                        }
-                    }, selfUserInfo);
+                    }, new SetSelfInfoReq
+                    {
+                        Nickname = nickName,
+                        FaceURL = faceUrl
+                    });
                 }
             }
         }

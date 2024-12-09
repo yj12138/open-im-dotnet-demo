@@ -17,12 +17,9 @@ namespace IMDemo
         protected override void OnLoad()
         {
             base.OnLoad();
-            if (!ChatMgr.Instance.InitSDK())
-            {
-                Debug.Log("InitSDK error");
-                Close();
-                return;
-            }
+
+            ChatMgr.Instance.InitSDK();
+
             if (OnLoadCallBack != null)
             {
                 OnLoadCallBack();

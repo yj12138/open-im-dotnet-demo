@@ -1,6 +1,7 @@
 using Dawn;
 using OpenIM.IMSDK;
 using OpenIM.IMSDK.Listener;
+using OpenIM.Proto;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
 
 namespace IMDemo.Chat
@@ -8,48 +9,57 @@ namespace IMDemo.Chat
     public class FriendShipListener : IFriendShipListener
     {
 
-        public event Action<FriendInfo> Event_OnFriendInfoChange;
+        public event Action<IMFriend> Event_OnFriendInfoChange;
         public FriendShipListener()
         {
         }
 
 
-        public void OnBlackAdded(BlackInfo blackInfo)
+        public void OnBlackAdded(IMBlack blackInfo)
         {
         }
 
-        public void OnBlackDeleted(BlackInfo blackInfo)
+        public void OnBlackDeleted(IMBlack blackInfo)
         {
         }
 
-        public void OnFriendAdded(FriendInfo friendInfo)
+        public void OnFriendAdded(IMBlack friendInfo)
         {
         }
 
-        public void OnFriendDeleted(FriendInfo friendInfo)
+        public void OnFriendDeleted(IMFriend friendInfo)
         {
 
         }
 
-        public void OnFriendInfoChanged(FriendInfo friendInfo)
+        public void OnFriendInfoChanged(IMFriend friendInfo)
         {
             Event_OnFriendInfoChange?.Invoke(friendInfo);
         }
 
-        public void OnFriendApplicationAdded(FriendApplicationInfo friendApplication)
+        public void OnFriendApplicationAdded(IMFriendApplication friendApplication)
         {
+            throw new NotImplementedException();
         }
 
-        public void OnFriendApplicationDeleted(FriendApplicationInfo friendApplication)
+        public void OnFriendApplicationDeleted(IMFriendApplication friendApplication)
         {
+            throw new NotImplementedException();
         }
 
-        public void OnFriendApplicationAccepted(FriendApplicationInfo friendApplication)
+        public void OnFriendApplicationAccepted(IMFriendApplication friendApplication)
         {
+            throw new NotImplementedException();
         }
 
-        public void OnFriendApplicationRejected(FriendApplicationInfo friendApplication)
+        public void OnFriendApplicationRejected(IMFriendApplication friendApplication)
         {
+            throw new NotImplementedException();
+        }
+
+        public void OnFriendAdded(IMFriend friend)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -2,7 +2,7 @@ using Dawn;
 using Dawn.UI;
 using IMDemo.Chat;
 using ImGuiNET;
-using OpenIM.IMSDK;
+using OpenIM.Proto;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
 
 namespace IMDemo.UI
@@ -18,7 +18,7 @@ namespace IMDemo.UI
             window.Show("Group List");
         }
 
-        List<GroupInfo> groupList;
+        List<IMGroup> groupList = new List<IMGroup>();
         public override void OnEnable()
         {
             RefreshGroupList();
@@ -32,16 +32,17 @@ namespace IMDemo.UI
         }
         void RefreshGroupList()
         {
-            OpenIMSDK.GetJoinedGroupList((list, errCode, errMsg) =>
+            OpenIMSDK.GetJoinedGroups((list) =>
             {
                 if (list != null)
                 {
-                    groupList = list;
+                    groupList.Clear();
+                    groupList.AddRange(list);
                 }
             });
         }
 
-        void OnGroupInfoChange(GroupInfo group)
+        void OnGroupInfoChange(IMGroup group)
         {
             RefreshGroupList();
         }
@@ -105,51 +106,39 @@ namespace IMDemo.UI
             ImGui.EndChild();
         }
 
-        void OnChatClick(GroupInfo group)
+        void OnChatClick(IMGroup group)
         {
-            OpenIMSDK.GetOneConversation((converstion, err, errMsg) =>
+            OpenIMSDK.GetOneConversation((converstion) =>
             {
                 if (converstion != null)
                 {
                     ChatWindow.ShowChatWindow(converstion);
                 }
-                else
-                {
-                    Debug.Error(errMsg);
-                }
-            }, ConversationType.Group, group.GroupID);
+            }, SessionType.ReadGroup, group.GroupID);
         }
-        void OnDetailClick(GroupInfo group)
+        void OnDetailClick(IMGroup group)
         {
             GroupInfoWindow.ShowGroupInfo(group.GroupID);
         }
-        void OnDeleteClick(GroupInfo group)
+        void OnDeleteClick(IMGroup group)
         {
-            if (group.OwnerUserID == OpenIMSDK.GetLoginUserId())
+            if (group.OwnerUserID == ChatMgr.Instance.currentUser.uid)
             {
-                OpenIMSDK.DismissGroup((suc, err, errMsg) =>
+                OpenIMSDK.DismissGroup((suc) =>
                 {
                     if (suc)
                     {
                         RefreshGroupList();
-                    }
-                    else
-                    {
-                        Debug.Error(errMsg);
                     }
                 }, group.GroupID);
             }
             else
             {
-                OpenIMSDK.QuitGroup((suc, err, errMsg) =>
+                OpenIMSDK.QuitGroup((suc) =>
                 {
                     if (suc)
                     {
                         RefreshGroupList();
-                    }
-                    else
-                    {
-                        Debug.Error(errMsg);
                     }
                 }, group.GroupID);
             }

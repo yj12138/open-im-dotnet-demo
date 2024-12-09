@@ -1,6 +1,6 @@
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
 
-using OpenIM.IMSDK;
+using OpenIM.Proto;
 using Dawn;
 using IMDemo.Data;
 using Newtonsoft.Json;
@@ -25,42 +25,50 @@ namespace IMDemo.Chat
         }
         public User currentUser;
         ConnListener connListener;
+
         private ChatMgr()
         {
             connListener = new ConnListener();
+            OpenIMSDK.SetConnListener(connListener);
+            OpenIMSDK.SetErrorHandler(ErrorHandler);
         }
-        public static OpenIM.IMSDK.PlatformID PlatformID
+        public static Platform Platform
         {
             get
             {
 #if WINDOWS
-                return OpenIM.IMSDK.PlatformID.WindowsPlatformID;
+                return Platform.Windows;
 #elif LINUX
-                return OpenIM.IMSDK.PlatformID.LinuxPlatformID;
+                return Platform.Linux;
 #elif MAC
-                return OpenIM.IMSDK.PlatformID.OSXPlatformID;
+                return Platform.MacOs;
 #endif
             }
         }
-        public bool InitSDK()
+        public void ErrorHandler(int errCode, string errMsg)
+        {
+            Debug.Error(errCode, errMsg);
+        }
+        public void InitSDK()
         {
             var config = new IMConfig()
             {
-                PlatformID = (int)PlatformID,
+                Platform = Platform,
                 ApiAddr = Config.APIAddr,
                 WsAddr = Config.WsAddr,
                 DataDir = Path.Combine(AppContext.BaseDirectory, Config.DataDir),
-                LogLevel = Config.LogLevel,
+                LogLevel = LogLevel.LevelDebug,
                 IsLogStandardOutput = Config.IsLogStandardOutput,
                 LogFilePath = Path.Combine(AppContext.BaseDirectory, Config.LogFilePath),
-                IsExternalExtensions = Config.IsExternalExtensions,
+                DbPath = Config.DBPath
             };
+            OpenIMSDK.InitSDK((suc) =>
+            {
 
-            return OpenIMSDK.InitSDK(config, connListener);
+            }, config);
         }
         public void UnInitSDK()
         {
-            OpenIMSDK.UnInitSDK();
         }
         public void Update()
         {
@@ -82,7 +90,7 @@ namespace IMDemo.Chat
                     var userTokenReq = new UserTokenReq()
                     {
                         secret = "openIM123",
-                        platformID = (int)ChatMgr.PlatformID,
+                        platformID = (int)Platform,
                         userID = userId,
                     };
                     var postData = JsonConvert.SerializeObject(userTokenReq);

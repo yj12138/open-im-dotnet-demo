@@ -1,7 +1,7 @@
 using Dawn;
 using Dawn.UI;
 using ImGuiNET;
-using OpenIM.IMSDK;
+using OpenIM.Proto;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
 
 namespace IMDemo.UI
@@ -17,22 +17,29 @@ namespace IMDemo.UI
             window.Show("Group Info");
         }
         public string groupId;
-        public GroupInfo group;
+        public IMGroup group;
+
+        string groupName;
+        string notification;
+        string introduction;
+        string ex;
+        GroupNeedVerification needVerification;
 
         public override void OnEnable()
         {
-            OpenIMSDK.GetSpecifiedGroupsInfo((groupList, err, errMsg) =>
+            OpenIMSDK.GetSpecifiedGroupsInfo((groupList) =>
             {
                 if (groupList != null)
                 {
-                    if (groupList.Count == 1)
+                    if (groupList.Length == 1)
                     {
                         group = groupList[0];
+                        groupName = group.GroupName;
+                        notification = group.Notification;
+                        introduction = group.Introduction;
+                        ex = group.Ex;
+                        needVerification = group.NeedVerification;
                     }
-                }
-                else
-                {
-                    Debug.Error(errMsg);
                 }
             }, [groupId]);
         }
@@ -51,25 +58,25 @@ namespace IMDemo.UI
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("GroupName");
             ImGui.NextColumn();
-            if (ImGui.InputText("##groupName", ref group.GroupName, 100)) { }
+            if (ImGui.InputText("##groupName", ref groupName, 100)) { }
             ImGui.NextColumn();
 
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("Notification");
             ImGui.NextColumn();
-            if (ImGui.InputText("##notification", ref group.Notification, 100)) { }
+            if (ImGui.InputText("##notification", ref notification, 100)) { }
             ImGui.NextColumn();
 
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("Introduction");
             ImGui.NextColumn();
-            if (ImGui.InputText("##introduction", ref group.Introduction, 100)) { }
+            if (ImGui.InputText("##introduction", ref introduction, 100)) { }
             ImGui.NextColumn();
 
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("FaceURL");
             ImGui.NextColumn();
-            if (ImGui.InputText("##faceURL", ref group.FaceURL, 100)) { }
+            ImGui.Text(group.FaceURL);
             ImGui.NextColumn();
 
             ImGui.SetColumnWidth(0, 150);
@@ -91,12 +98,6 @@ namespace IMDemo.UI
             ImGui.NextColumn();
 
             ImGui.SetColumnWidth(0, 150);
-            ImGui.Text("GroupType");
-            ImGui.NextColumn();
-            ImGui.Text($"{group.GroupType}");
-            ImGui.NextColumn();
-
-            ImGui.SetColumnWidth(0, 150);
             ImGui.Text("OwnerUserID");
             ImGui.NextColumn();
             ImGui.Text(group.OwnerUserID);
@@ -111,7 +112,7 @@ namespace IMDemo.UI
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("Ex");
             ImGui.NextColumn();
-            ImGui.InputText("##Ex", ref group.Ex, 1000);
+            ImGui.InputText("##Ex", ref ex, 1000);
             ImGui.NextColumn();
 
             ImGui.SetColumnWidth(0, 150);
@@ -123,7 +124,7 @@ namespace IMDemo.UI
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("NeedVerification");
             ImGui.NextColumn();
-            ImGui.InputInt("##NeedVerification", ref group.NeedVerification);
+            ImGui.Text(group.NeedVerification.ToString());
             ImGui.NextColumn();
 
             ImGui.SetColumnWidth(0, 150);
@@ -154,17 +155,13 @@ namespace IMDemo.UI
 
             if (ImGui.Button("Modify"))
             {
-                OpenIMSDK.SetGroupInfo((suc, err, errMsg) =>
+                OpenIMSDK.SetGroupInfo((suc) =>
                 {
                     if (suc)
                     {
                         Close();
                     }
-                    else
-                    {
-                        Debug.Error(errMsg);
-                    }
-                }, new GroupInfoForSet()
+                }, new SetGroupInfoReq()
                 {
                     GroupID = group.GroupID,
                     GroupName = group.GroupName,
@@ -172,7 +169,6 @@ namespace IMDemo.UI
                     Introduction = group.Introduction,
                     FaceURL = group.FaceURL,
                     Ex = group.Ex,
-                    NeedVerification = group.NeedVerification,
                 });
             }
         }

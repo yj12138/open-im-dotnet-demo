@@ -2,8 +2,7 @@ using Dawn;
 using Dawn.UI;
 using IMDemo.Chat;
 using ImGuiNET;
-using OpenIM.IMSDK;
-using OpenTK.Windowing.Common;
+using OpenIM.Proto;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
 
 namespace IMDemo.UI
@@ -19,15 +18,20 @@ namespace IMDemo.UI
             window.Show("Friend");
         }
         public string friendUserId;
-        public FriendInfo friend;
-
+        public IMFriend friend;
+        string remark;
+        bool isPinned;
+        string ex;
         public override void OnEnable()
         {
-            OpenIMSDK.GetSpecifiedFriendsInfo((list, err, errMsg) =>
+            OpenIMSDK.GetSpecifiedFriends((list) =>
             {
-                if (list != null && list.Count == 1)
+                if (list != null && list.Length == 1)
                 {
                     friend = list[0];
+                    remark = friend.Remark;
+                    isPinned = friend.IsPinned;
+                    ex = friend.Ex;
                 }
             }, [friendUserId], true);
         }
@@ -57,7 +61,7 @@ namespace IMDemo.UI
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("Remark");
             ImGui.NextColumn();
-            if (ImGui.InputText("##remark", ref friend.Remark, 100)) { }
+            if (ImGui.InputText("##remark", ref remark, 100)) { }
             ImGui.NextColumn();
 
             ImGui.SetColumnWidth(0, 150);
@@ -99,37 +103,26 @@ namespace IMDemo.UI
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("IsPinned");
             ImGui.NextColumn();
-            ImGui.Checkbox("##isPinned", ref friend.IsPinned);
+            ImGui.Checkbox("##isPinned", ref isPinned);
             ImGui.NextColumn();
 
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("Ex");
             ImGui.NextColumn();
-            if (ImGui.InputText("##ex", ref friend.Ex, 500)) { }
+            if (ImGui.InputText("##ex", ref ex, 500)) { }
             ImGui.NextColumn();
 
             ImGui.Columns(1);
 
             if (ImGui.Button("Modify"))
             {
-                OpenIMSDK.UpdateFriends((suc, err, errMsg) =>
+                OpenIMSDK.UpdateFriend((suc) =>
                 {
                     if (suc)
                     {
                         Close();
                     }
-                    else
-                    {
-                        Debug.Error(errMsg);
-                    }
-                }, new UpdateFriendsReq()
-                {
-                    OwnerUserID = ChatMgr.Instance.currentUser.uid,
-                    FriendUserIDs = [friend.FriendUserID],
-                    IsPinned = friend.IsPinned,
-                    Remark = friend.Remark,
-                    Ex = friend.Ex,
-                });
+                }, friend.FriendUserID, isPinned, remark, ex);
             }
         }
     }

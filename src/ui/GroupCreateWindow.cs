@@ -3,6 +3,7 @@ using Dawn.UI;
 using IMDemo.Chat;
 using ImGuiNET;
 using OpenIM.IMSDK;
+using OpenIM.Proto;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
 
 namespace IMDemo.UI
@@ -17,28 +18,19 @@ namespace IMDemo.UI
             window.rect.h = 400;
             window.Show("Group Create");
         }
-        CreateGroupReq createGroupReq;
-        List<FriendInfo> friendList;
+        List<IMFriend> friendList = new List<IMFriend>();
+        string groupName;
         List<bool> isSelectList;
         public override void OnEnable()
         {
-            
-            createGroupReq = new CreateGroupReq()
-            {
-                OwnerUserID = ChatMgr.Instance.currentUser.uid,
-                GroupInfo = new GroupInfo()
-                {
-                    GroupName = "",
-                    FaceURL = "",
-                    GroupType = (int)GroupType.Group,
-                }
-            };
+
             isSelectList = new List<bool>();
-            OpenIMSDK.GetFriendList((list, errCode, errMsg) =>
+            OpenIMSDK.GetFriends((list) =>
            {
                if (list != null)
                {
-                   friendList = list;
+                   friendList.Clear();
+                   friendList.AddRange(list);
                    for (int i = 0; i < friendList.Count; i++)
                    {
                        isSelectList.Add(false);
@@ -53,13 +45,7 @@ namespace IMDemo.UI
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("GroupName");
             ImGui.NextColumn();
-            ImGui.InputText("##GroupName", ref createGroupReq.GroupInfo.GroupName, 100);
-            ImGui.NextColumn();
-
-            ImGui.SetColumnWidth(0, 150);
-            ImGui.Text("GroupFace");
-            ImGui.NextColumn();
-            ImGui.InputText("##GroupFace", ref createGroupReq.GroupInfo.FaceURL, 100);
+            ImGui.InputText("##GroupName", ref groupName, 100);
             ImGui.NextColumn();
 
             ImGui.Columns(1);
@@ -95,27 +81,31 @@ namespace IMDemo.UI
             }
             if (ImGui.Button("Create Group"))
             {
-                var memeberUserIds = new List<string>();
-                for (int i = 0; i < friendList.Count; i++)
-                {
-                    if (isSelectList[i])
-                    {
-                        memeberUserIds.Add(friendList[i].FriendUserID);
-                    }
-                }
-                createGroupReq.MemberUserIDs = memeberUserIds.ToArray();
-                OpenIMSDK.CreateGroup((group, err, errMsg) =>
-                {
-                    if (group != null)
-                    {
-                        Close();
-                    }
-                    else
-                    {
-                        Debug.Error(errMsg);
-                    }
-                }, createGroupReq);
+                OnClick();
             }
+        }
+
+        void OnClick()
+        {
+            var group = new IMGroup()
+            {
+                GroupName = groupName
+            };
+            var memeberUserIds = new List<string>();
+            for (int i = 0; i < friendList.Count; i++)
+            {
+                if (isSelectList[i])
+                {
+                    memeberUserIds.Add(friendList[i].FriendUserID);
+                }
+            }
+            OpenIMSDK.CreateGroup((group) =>
+            {
+                if (group != null)
+                {
+                    Close();
+                }
+            }, group, memeberUserIds.ToArray(), new[] { ChatMgr.Instance.currentUser.uid });
         }
     }
 }

@@ -2,49 +2,62 @@ using Dawn;
 using OpenIM.IMSDK;
 using OpenIM.IMSDK.Listener;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
+using OpenIM.Proto;
 
 namespace IMDemo.Chat
 {
     public class ConversationListener : IConversationListener
     {
 
-        public event Action<List<Conversation>> Event_OnConversationsInfoChange;
+        public event Action<List<IMConversation>> Event_OnConversationsInfoChange;
 
         public ConversationListener()
         {
         }
 
-        public void OnConversationChanged(List<Conversation> conversationList)
+        public void OnConversationChanged(List<IMConversation> conversationList)
         {
             Event_OnConversationsInfoChange?.Invoke(conversationList);
         }
 
-        public void OnNewConversation(List<Conversation> conversationList)
+        public void OnSyncServerStart(bool reinstalled)
         {
+            throw new NotImplementedException();
         }
 
-        public void OnSyncServerFailed()
+        public void OnSyncServerFinish(bool reinstalled)
         {
-        }
-
-        public void OnSyncServerStart()
-        {
-        }
-
-        public void OnTotalUnreadMessageCountChanged(int totalUnreadCount)
-        {
-        }
-
-        public void OnConversationUserInputStatusChanged(InputStatesChangedData data)
-        {
+            throw new NotImplementedException();
         }
 
         public void OnSyncServerProgress(int progress)
         {
+            throw new NotImplementedException();
         }
 
-        public void OnSyncServerFinish()
+        public void OnSyncServerFailed(bool reinstalled)
         {
+            throw new NotImplementedException();
+        }
+
+        public void OnNewConversation(IMConversation[] conversations)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnConversationChanged(IMConversation[] conversations)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnTotalUnreadMessageCountChanged(int totalUnreadCount)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnConversationUserInputStatusChanged(string conversationId, string userId, Platform[] platforms)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,9 +1,8 @@
 using Dawn;
 using Dawn.UI;
-using IMDemo.Chat;
 using ImGuiNET;
-using OpenIM.IMSDK;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
+using OpenIM.Proto;
 
 namespace IMDemo.UI
 {
@@ -18,22 +17,30 @@ namespace IMDemo.UI
             window.Show("Conversation");
         }
         public string conversationId;
-        public Conversation conversation;
+        public IMConversation conversation;
+
+        string draftText;
+        bool isPinned;
+        bool isPrivateChat;
+        int burnDuration;
+        string ex;
+
         public override void OnEnable()
         {
             conversation = null;
-            OpenIMSDK.GetMultipleConversation((list, err, errMsg) =>
+            OpenIMSDK.GetMultipleConversation((list) =>
             {
                 if (list != null)
                 {
-                    if (list.Count == 1)
+                    if (list.Length == 1)
                     {
                         conversation = list[0];
+                        draftText = conversation.DraftText;
+                        isPinned = conversation.IsPinned;
+                        isPrivateChat = conversation.IsPrivateChat;
+                        burnDuration = conversation.BurnDuration;
+                        ex = conversation.Ex;
                     }
-                }
-                else
-                {
-                    Debug.Error(errMsg);
                 }
             }, [conversationId]);
         }
@@ -108,7 +115,14 @@ namespace IMDemo.UI
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("LatestMsg");
             ImGui.NextColumn();
-            ImGui.Text(conversation.LatestMsg);
+            if (conversation.LatestMsg != null)
+            {
+                ImGui.Text(conversation.LatestMsg.ClientMsgID);
+            }
+            else
+            {
+                ImGui.Text("");
+            }
             ImGui.NextColumn();
 
             ImGui.SetColumnWidth(0, 150);
@@ -120,21 +134,21 @@ namespace IMDemo.UI
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("DraftText");
             ImGui.NextColumn();
-            if (ImGui.InputText("##draftText", ref conversation.DraftText, 500)) { }
+            if (ImGui.InputText("##draftText", ref draftText, 500)) { }
             ImGui.SameLine();
             if (ImGui.Button("SetDraftText"))
             {
-                OpenIMSDK.SetConversationDraft((suc, err, errMsg) =>
+                OpenIMSDK.SetConversationDraft((suc) =>
                 {
                     if (suc)
                     {
-                        OpenIMSDK.GetOneConversation((newConversation, err, errMsg) =>
+                        OpenIMSDK.GetOneConversation((newConversation) =>
                        {
                            if (newConversation != null)
                            {
                                conversation = newConversation;
                            }
-                       }, conversation.ConversationType, conversation.ConversationType == ConversationType.Single ? conversation.UserID : conversation.GroupID);
+                       }, conversation.ConversationType, conversation.ConversationType == SessionType.Single ? conversation.UserID : conversation.GroupID);
                     }
                 }, conversationId, conversation.DraftText);
             }
@@ -150,95 +164,44 @@ namespace IMDemo.UI
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("IsPinned");
             ImGui.NextColumn();
-            ImGui.Checkbox("##IsPinned", ref conversation.IsPinned);
+            ImGui.Checkbox("##IsPinned", ref isPinned);
             ImGui.NextColumn();
 
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("IsPrivateChat");
             ImGui.NextColumn();
-            ImGui.Checkbox("##IsPrivateChat", ref conversation.IsPrivateChat);
+            ImGui.Checkbox("##IsPrivateChat", ref isPrivateChat);
             ImGui.NextColumn();
 
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("BurnDuration");
             ImGui.NextColumn();
-            ImGui.InputInt("##BurnDuration", ref conversation.BurnDuration);
-            ImGui.NextColumn();
-
-            ImGui.SetColumnWidth(0, 150);
-            ImGui.Text("IsNotInGroup");
-            ImGui.NextColumn();
-            ImGui.Text(conversation.IsNotInGroup.ToString());
-            ImGui.NextColumn();
-
-            ImGui.SetColumnWidth(0, 150);
-            ImGui.Text("UpdateUnreadCountTime");
-            ImGui.NextColumn();
-            ImGui.Text($"{conversation.UpdateUnreadCountTime}");
-            ImGui.NextColumn();
-
-            ImGui.SetColumnWidth(0, 150);
-            ImGui.Text("AttachedInfo");
-            ImGui.NextColumn();
-            ImGui.Text(conversation.AttachedInfo);
+            ImGui.InputInt("##BurnDuration", ref burnDuration);
             ImGui.NextColumn();
 
             ImGui.SetColumnWidth(0, 150);
             ImGui.Text("Ex");
             ImGui.NextColumn();
-            ImGui.InputText("##Ex", ref conversation.Ex, 500);
-            ImGui.NextColumn();
-
-            ImGui.SetColumnWidth(0, 150);
-            ImGui.Text("MaxSeq");
-            ImGui.NextColumn();
-            ImGui.Text($"{conversation.MaxSeq}");
-            ImGui.NextColumn();
-
-            ImGui.SetColumnWidth(0, 150);
-            ImGui.Text("MinSeq");
-            ImGui.NextColumn();
-            ImGui.Text($"{conversation.MinSeq}");
-            ImGui.NextColumn();
-
-            ImGui.SetColumnWidth(0, 150);
-            ImGui.Text("HasReadSeq");
-            ImGui.NextColumn();
-            ImGui.Text($"{conversation.HasReadSeq}");
-            ImGui.NextColumn();
-
-            ImGui.SetColumnWidth(0, 150);
-            ImGui.Text("MsgDestructTime");
-            ImGui.NextColumn();
-            ImGui.Text($"{conversation.MsgDestructTime}");
-            ImGui.NextColumn();
-
-            ImGui.SetColumnWidth(0, 150);
-            ImGui.Text("IsMsgDestruct");
-            ImGui.NextColumn();
-            ImGui.Text(conversation.IsMsgDestruct.ToString());
+            ImGui.InputText("##Ex", ref ex, 500);
             ImGui.NextColumn();
 
             ImGui.Columns(1);
 
             if (ImGui.Button("Modify"))
             {
-                OpenIMSDK.SetConversation((suc, err, errMsg) =>
+                OpenIMSDK.SetConversation((suc) =>
                 {
                     if (suc)
                     {
                         Close();
                     }
-                    else
-                    {
-                        Debug.Error(errMsg);
-                    }
-                }, conversation.ConversationID, new ConversationReq()
+                }, new SetConversationReq()
                 {
-                    IsPinned = conversation.IsPinned,
-                    IsPrivateChat = conversation.IsPrivateChat,
-                    Ex = conversation.Ex,
-                    BurnDuration = conversation.BurnDuration,
+                    ConversationID = conversation.ConversationID,
+                    IsPinned = isPinned,
+                    IsPrivateChat = isPrivateChat,
+                    Ex = ex,
+                    BurnDuration = burnDuration,
                 });
             }
         }

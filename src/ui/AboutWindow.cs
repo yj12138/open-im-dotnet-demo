@@ -31,8 +31,8 @@ namespace IMDemo.UI
 
         public override void OnGUI()
         {
-            ImGui.Text("Open IM Dotnet SDK Version:1.0.4");
-            ImGui.Text("Open IM SDK Core Version:v3.8.2-alpha.1");
+            ImGui.Text("Open IM Dotnet SDK Version:2.0.0");
+            ImGui.Text("Open IM SDK Core Version:3.9");
             ImGui.Text("Open IM Server Version:3.8.2");
         }
     }

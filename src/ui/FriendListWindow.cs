@@ -2,7 +2,7 @@ using Dawn;
 using Dawn.UI;
 using IMDemo.Chat;
 using ImGuiNET;
-using OpenIM.IMSDK;
+using OpenIM.Proto;
 using OpenIMSDK = OpenIM.IMSDK.IMSDK;
 
 namespace IMDemo.UI
@@ -18,7 +18,7 @@ namespace IMDemo.UI
             window.Show("Friend List");
         }
 
-        List<FriendInfo> friendList;
+        List<IMFriend> friendList = new List<IMFriend>();
 
         public override void OnEnable()
         {
@@ -31,15 +31,16 @@ namespace IMDemo.UI
         }
         void RefreshFriendList()
         {
-            OpenIMSDK.GetFriendList((list, errCode, errMsg) =>
+            OpenIMSDK.GetFriends((list) =>
            {
                if (list != null)
                {
-                   friendList = list;
+                   friendList.Clear();
+                   friendList.AddRange(list);
                }
            }, true);
         }
-        void OnFriendInfoChange(FriendInfo friend)
+        void OnFriendInfoChange(IMFriend friend)
         {
             RefreshFriendList();
         }
@@ -106,35 +107,27 @@ namespace IMDemo.UI
             ImGui.EndChild();
         }
 
-        void OnChatClick(FriendInfo friend)
+        void OnChatClick(IMFriend friend)
         {
-            OpenIMSDK.GetOneConversation((converstion, err, errMsg) =>
+            OpenIMSDK.GetOneConversation((converstion) =>
             {
                 if (converstion != null)
                 {
                     ChatWindow.ShowChatWindow(converstion);
                 }
-                else
-                {
-                    Debug.Error(errMsg);
-                }
-            }, ConversationType.Single, friend.FriendUserID);
+            }, SessionType.Single, friend.FriendUserID);
         }
-        void OnDeleteClick(FriendInfo friend)
+        void OnDeleteClick(IMFriend friend)
         {
-            OpenIMSDK.DeleteFriend((suc, err, errMsg) =>
+            OpenIMSDK.DeleteFriend((suc) =>
             {
                 if (suc)
                 {
                     RefreshFriendList();
                 }
-                else
-                {
-                    Debug.Error(errMsg);
-                }
             }, friend.FriendUserID);
         }
-        void OnDetailClick(FriendInfo friend)
+        void OnDetailClick(IMFriend friend)
         {
             FriendInfoWindow.ShowFriendInfo(friend.FriendUserID);
         }
