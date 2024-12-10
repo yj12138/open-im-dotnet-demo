@@ -25,37 +25,30 @@ namespace IMDemo.Chat
 
         public void OnRecvNewMessage(IMMessage message)
         {
-            throw new NotImplementedException();
         }
 
         public void OnRecvC2CReadReceipt(MessageReceipt[] msgReceiptList)
         {
-            throw new NotImplementedException();
         }
 
         public void OnNewRecvMessageRevoked(RevokedTips revokedTips)
         {
-            throw new NotImplementedException();
         }
 
         public void OnRecvOfflineNewMessage(IMMessage message)
         {
-            throw new NotImplementedException();
         }
 
         public void OnMessageDeleted(IMMessage message)
         {
-            throw new NotImplementedException();
         }
 
         public void OnRecvOnlineOnlyMessage(IMMessage message)
         {
-            throw new NotImplementedException();
         }
 
         public void OnMessageEdited(IMMessage message)
         {
-            throw new NotImplementedException();
         }
     }
 }

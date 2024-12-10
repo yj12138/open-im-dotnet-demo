@@ -39,27 +39,22 @@ namespace IMDemo.Chat
 
         public void OnFriendApplicationAdded(IMFriendApplication friendApplication)
         {
-            throw new NotImplementedException();
         }
 
         public void OnFriendApplicationDeleted(IMFriendApplication friendApplication)
         {
-            throw new NotImplementedException();
         }
 
         public void OnFriendApplicationAccepted(IMFriendApplication friendApplication)
         {
-            throw new NotImplementedException();
         }
 
         public void OnFriendApplicationRejected(IMFriendApplication friendApplication)
         {
-            throw new NotImplementedException();
         }
 
         public void OnFriendAdded(IMFriend friend)
         {
-            throw new NotImplementedException();
         }
     }
 }

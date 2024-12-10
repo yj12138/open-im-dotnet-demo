@@ -25,11 +25,13 @@ namespace IMDemo.UI
 
         IMUser selfUserInfo = null;
 
-        string nickName;
-        string faceUrl;
+        string nickName = "";
+        string faceUrl = "";
+        string ex = "";
 
         public override void OnEnable()
         {
+
             if (ChatMgr.Instance.currentUser != null)
             {
                 OpenIMSDK.GetSelfUserInfo((userInfo) =>
@@ -39,6 +41,7 @@ namespace IMDemo.UI
                         selfUserInfo = userInfo;
                         nickName = selfUserInfo.Nickname;
                         faceUrl = selfUserInfo.FaceURL;
+                        ex = selfUserInfo.Ex;
                     }
                 });
             }
@@ -58,7 +61,7 @@ namespace IMDemo.UI
 
                 ImGui.Text("NickName");
                 ImGui.NextColumn();
-                if (ImGui.InputText("nickname", ref nickName, 100))
+                if (ImGui.InputText("##nickname", ref nickName, 100))
                 {
 
                 }
@@ -66,7 +69,7 @@ namespace IMDemo.UI
 
                 ImGui.Text("FaceUrl");
                 ImGui.NextColumn();
-                if (ImGui.InputText("FaceURL", ref faceUrl, 100))
+                if (ImGui.InputText("##FaceURL", ref faceUrl, 100))
                 {
 
                 }
@@ -79,12 +82,16 @@ namespace IMDemo.UI
 
                 ImGui.Text("Ex");
                 ImGui.NextColumn();
-                ImGui.Text($"{selfUserInfo.Ex}");
+                if (ImGui.InputText("##Ex", ref ex, 500))
+                {
+
+                }
                 ImGui.NextColumn();
 
                 ImGui.Text("GlobalRecvMsgOpt");
                 ImGui.NextColumn();
                 ImGui.Text($"{selfUserInfo.GlobalRecvMsgOpt}");
+
                 ImGui.NextColumn();
 
                 ImGui.Columns(1);
@@ -100,7 +107,8 @@ namespace IMDemo.UI
                     }, new SetSelfInfoReq
                     {
                         Nickname = nickName,
-                        FaceURL = faceUrl
+                        FaceURL = faceUrl,
+                        Ex = ex
                     });
                 }
             }

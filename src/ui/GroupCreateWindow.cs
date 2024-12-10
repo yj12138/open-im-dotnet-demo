@@ -19,7 +19,7 @@ namespace IMDemo.UI
             window.Show("Group Create");
         }
         List<IMFriend> friendList = new List<IMFriend>();
-        string groupName;
+        string groupName = "";
         List<bool> isSelectList;
         public override void OnEnable()
         {

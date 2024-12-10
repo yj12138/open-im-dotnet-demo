@@ -33,42 +33,34 @@ namespace IMDemo.Chat
 
         public void OnGroupMemberAdded(IMGroupMember groupMemberInfo)
         {
-            throw new NotImplementedException();
         }
 
         public void OnGroupMemberDeleted(IMGroupMember groupMemberInfo)
         {
-            throw new NotImplementedException();
         }
 
         public void OnGroupApplicationAdded(IMGroupApplication groupApplication)
         {
-            throw new NotImplementedException();
         }
 
         public void OnGroupApplicationDeleted(IMGroupApplication groupApplication)
         {
-            throw new NotImplementedException();
         }
 
         public void OnGroupDismissed(IMGroup groupInfo)
         {
-            throw new NotImplementedException();
         }
 
         public void OnGroupMemberInfoChanged(IMGroupMember groupMemberInfo)
         {
-            throw new NotImplementedException();
         }
 
         public void OnGroupApplicationAccepted(IMGroupApplication groupApplication)
         {
-            throw new NotImplementedException();
         }
 
         public void OnGroupApplicationRejected(IMGroupApplication groupApplication)
         {
-            throw new NotImplementedException();
         }
     }
 }
