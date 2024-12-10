@@ -39,7 +39,7 @@ namespace IMDemo.UI
             {
                 OpenIMSDK.GetUsersInfo((list) =>
                 {
-                    if (list != null && list.Count == 1)
+                    if (list != null && list.Length == 1)
                     {
                         searchUserInfo = list[0];
                         OpenIMSDK.GetSpecifiedFriends((list) =>

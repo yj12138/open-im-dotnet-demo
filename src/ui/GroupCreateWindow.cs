@@ -96,6 +96,7 @@ namespace IMDemo.UI
             {
                 if (isSelectList[i])
                 {
+                    Debug.Log(friendList[i].FriendUserID);
                     memeberUserIds.Add(friendList[i].FriendUserID);
                 }
             }
@@ -105,7 +106,7 @@ namespace IMDemo.UI
                 {
                     Close();
                 }
-            }, group, memeberUserIds.ToArray(), new[] { ChatMgr.Instance.currentUser.uid });
+            }, group, [], [.. memeberUserIds]);
         }
     }
 }

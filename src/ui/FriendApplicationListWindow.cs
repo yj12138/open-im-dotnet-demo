@@ -43,7 +43,7 @@ namespace IMDemo.UI
                     recipientList.Clear();
                     recipientList.AddRange(list);
                 }
-            }, true);
+            }, false);
         }
 
         public override void OnGUI()
