@@ -25,7 +25,7 @@ namespace IMDemo.UI
         }
         void RefreshApplicantList()
         {
-            OpenIMSDK.GetFriendsRequest((list) =>
+            OpenIMSDK.GetFriendApplication((list) =>
             {
                 if (list != null)
                 {
@@ -36,7 +36,7 @@ namespace IMDemo.UI
         }
         void RefreshRecipientList()
         {
-            OpenIMSDK.GetFriendsRequest((list) =>
+            OpenIMSDK.GetFriendApplication((list) =>
             {
                 if (list != null)
                 {
@@ -149,7 +149,7 @@ namespace IMDemo.UI
 
         void OnAgreeClick(IMFriendApplication applicationInfo)
         {
-            OpenIMSDK.HandleFriendRequest((suc) =>
+            OpenIMSDK.HandleFriendApplication((suc) =>
             {
                 if (suc)
                 {
@@ -159,7 +159,7 @@ namespace IMDemo.UI
         }
         void OnRefuseClick(IMFriendApplication applicationInfo)
         {
-            OpenIMSDK.HandleFriendRequest((suc) =>
+            OpenIMSDK.HandleFriendApplication((suc) =>
             {
                 if (suc)
                 {

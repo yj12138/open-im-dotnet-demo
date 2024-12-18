@@ -87,10 +87,6 @@ namespace IMDemo.UI
 
         void OnClick()
         {
-            var group = new IMGroup()
-            {
-                GroupName = groupName
-            };
             var memeberUserIds = new List<string>();
             for (int i = 0; i < friendList.Count; i++)
             {
@@ -100,13 +96,18 @@ namespace IMDemo.UI
                     memeberUserIds.Add(friendList[i].FriendUserID);
                 }
             }
+            var req = new CreateGroupReq
+            {
+                GroupName = groupName,
+            };
+            req.MemberUserIDs.AddRange(memeberUserIds);
             OpenIMSDK.CreateGroup((group) =>
             {
                 if (group != null)
                 {
                     Close();
                 }
-            }, group, [], [.. memeberUserIds]);
+            }, req);
         }
     }
 }

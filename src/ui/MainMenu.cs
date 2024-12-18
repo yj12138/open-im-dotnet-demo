@@ -9,7 +9,7 @@ namespace IMDemo.UI
         public static void LoginUser1()
         {
             var uid = "test1";
-            var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiJ0ZXN0MSIsIlBsYXRmb3JtSUQiOjMsImV4cCI6MTc0MTU3Mzg4MCwibmJmIjoxNzMzNzk3NTgwLCJpYXQiOjE3MzM3OTc4ODB9.bEUQjXRJnb2zTAUZcjTIw4iBA9kX9TNnl5ZUQRyKIEY";
+            var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiJ0ZXN0MSIsIlBsYXRmb3JtSUQiOjMsImV4cCI6MTc0MjIyMjQ5NywibmJmIjoxNzM0NDQ2MTk3LCJpYXQiOjE3MzQ0NDY0OTd9.Rs5hEzaZ-Fe1DQFI2Ptph7-8VA0SxszK7WrkaBHPWTA";
             User.TryLogin(uid, token);
         }
 
@@ -17,7 +17,7 @@ namespace IMDemo.UI
         public static void LoginUser2()
         {
             var uid = "test2";
-            var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiJ0ZXN0MiIsIlBsYXRmb3JtSUQiOjMsImV4cCI6MTc0MTU3Mzg5NCwibmJmIjoxNzMzNzk3NTk0LCJpYXQiOjE3MzM3OTc4OTR9.3LFoOqwV9Hd2yq5nXFWpADZqnS886SsvdIXdBNSzuAk";
+            var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOiJ0ZXN0MiIsIlBsYXRmb3JtSUQiOjMsImV4cCI6MTc0MjIyMjUxMiwibmJmIjoxNzM0NDQ2MjEyLCJpYXQiOjE3MzQ0NDY1MTJ9.VX6-MqRyj67g4JysROfG0ctP99uqrrY0hUQvZpF77aw";
             User.TryLogin(uid, token);
         }
 
